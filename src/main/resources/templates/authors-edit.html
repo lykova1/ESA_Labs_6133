@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Author</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; color: #343a40; }
+        .form-container {
+          max-width: 600px;
+          margin: 50px auto;
+          padding: 20px;
+          background-color: #ffffff;
+          border: 1px solid #dee2e6;
+          border-radius: 5px;
+        }
+        .form-control { border-color: #6c757d; }
+        .btn-custom {
+          background-color: #343a40;
+          color: #ffffff;
+          border-color: #343a40;
+        }
+        .btn-custom:hover {
+          background-color: #6c757d;
+          border-color: #6c757d;
+        }
+        label { font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container form-container">
+    <h1 class="mb-4 text-center">Edit Author</h1>
+
+    <form th:action="@{/authors/{id}/edit(id=${author.id})}"
+          th:object="${author}"
+          method="post">
+
+        <div class="form-group">
+            <label for="id">ID</label>
+            <input readonly type="text" th:field="*{id}" id="id" class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="firstName">First name</label>
+            <input type="text"
+                   id="firstName"
+                   class="form-control"
+                   th:field="*{firstName}"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label for="lastName">Last name</label>
+            <input type="text"
+                   id="lastName"
+                   class="form-control"
+                   th:field="*{lastName}"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label for="birthYear">Birth year</label>
+            <input type="number"
+                   id="birthYear"
+                   class="form-control"
+                   th:field="*{birthYear}">
+        </div>
+
+        <div class="form-group">
+            <label for="country">Country</label>
+            <input type="text"
+                   id="country"
+                   class="form-control"
+                   th:field="*{country}">
+        </div>
+
+        <button type="submit" class="btn btn-custom btn-block mt-4">Save changes</button>
+        <a th:href="@{/authors}" class="btn btn-link btn-block mt-2">Back to authors</a>
+    </form>
+</div>
+</body>
+</html>

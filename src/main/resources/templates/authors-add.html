@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Author</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+          background-color: #f8f9fa;
+          color: #343a40;
+        }
+        .form-container {
+          max-width: 600px;
+          margin: 50px auto;
+          padding: 20px;
+          background-color: #ffffff;
+          border: 1px solid #dee2e6;
+          border-radius: 5px;
+        }
+        .form-control {
+          border-color: #6c757d;
+        }
+        .btn-custom {
+          background-color: #343a40;
+          color: #ffffff;
+          border-color: #343a40;
+        }
+        .btn-custom:hover {
+          background-color: #6c757d;
+          border-color: #6c757d;
+        }
+        label {
+          font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container form-container">
+    <h1 class="mb-4 text-center">Add Author</h1>
+
+    <form th:action="@{/authors/add}" th:object="${author}" method="post">
+        <div class="form-group">
+            <label for="firstName">First name</label>
+            <input type="text"
+                   id="firstName"
+                   class="form-control"
+                   th:field="*{firstName}"
+                   placeholder="First name"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label for="lastName">Last name</label>
+            <input type="text"
+                   id="lastName"
+                   class="form-control"
+                   th:field="*{lastName}"
+                   placeholder="Last name"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label for="birthYear">Birth year</label>
+            <input type="number"
+                   id="birthYear"
+                   class="form-control"
+                   th:field="*{birthYear}"
+                   placeholder="e.g. 1828">
+        </div>
+
+        <div class="form-group">
+            <label for="country">Country</label>
+            <input type="text"
+                   id="country"
+                   class="form-control"
+                   th:field="*{country}"
+                   placeholder="Country">
+        </div>
+
+        <button type="submit" class="btn btn-custom btn-block mt-4">Save author</button>
+        <a th:href="@{/authors}" class="btn btn-link btn-block mt-2">Back to authors</a>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

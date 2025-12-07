@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Add Book</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+          background-color: #f8f9fa;
+          color: #343a40;
+        }
+        .form-container {
+          max-width: 600px;
+          margin: 50px auto;
+          padding: 20px;
+          background-color: #ffffff;
+          border: 1px solid #dee2e6;
+          border-radius: 5px;
+        }
+        .form-control {
+          border-color: #6c757d;
+        }
+        .btn-custom {
+          background-color: #343a40;
+          color: #ffffff;
+          border-color: #343a40;
+        }
+        .btn-custom:hover {
+          background-color: #6c757d;
+          border-color: #6c757d;
+        }
+        label {
+          font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container form-container">
+    <h1 class="mb-4 text-center">Add Book</h1>
+
+    <form th:action="@{/books/add}" th:object="${book}" method="post">
+        <div class="form-group">
+            <label for="title">Title</label>
+            <input type="text" th:field="*{title}" id="title" class="form-control" placeholder="Title" required>
+        </div>
+
+        <div class="form-group">
+            <label for="isbn">ISBN</label>
+            <input type="text" th:field="*{isbn}" id="isbn" class="form-control" placeholder="ISBN">
+        </div>
+
+        <div class="form-group">
+            <label for="genre">Genre</label>
+            <input type="text" th:field="*{genre}" id="genre" class="form-control" placeholder="Genre">
+        </div>
+
+        <div class="form-group">
+            <label for="publishYear">Publish year</label>
+            <input type="number" th:field="*{publishYear}" id="publishYear" class="form-control" placeholder="Year" min="1000">
+        </div>
+
+        <div class="form-group">
+            <label for="pages">Pages</label>
+            <input type="number" th:field="*{pages}" id="pages" class="form-control" placeholder="Pages" min="1">
+        </div>
+
+        <div class="form-group">
+            <label for="author">Author</label>
+            <select th:field="*{authorId}" id="author" class="form-control">
+                <option value="" disabled selected>Choose author</option>
+                <option th:each="author : ${authors}"
+                        th:value="${author.id}"
+                        th:text="${author.firstName} + ' ' + ${author.lastName}">
+                </option>
+            </select>
+        </div>
+
+        <button type="submit" class="mt-4 btn btn-custom btn-block">Add Book</button>
+        <a th:href="@{/books}" class="btn btn-link btn-block mt-2">Back to books</a>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
