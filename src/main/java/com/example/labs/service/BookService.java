@@ -17,16 +17,31 @@ public class BookService {
     AuthorRepo authorRepo;
     @Autowired
     BookRepo bookRepo;
-    public void create(BookCreateDto dto) {
+    public BookDto create(BookCreateDto dto) {
         Book book = new Book();
         book.setTitle(dto.getTitle());
         book.setIsbn(dto.getIsbn());
         book.setGenre(dto.getGenre());
         book.setPublishYear(dto.getPublishYear());
         book.setPages(dto.getPages());
-        book.setAuthor(authorRepo.findById(dto.getAuthorId()).orElseThrow());
-        bookRepo.save(book);
+        book.setAuthor(
+                authorRepo.findById(dto.getAuthorId())
+                        .orElseThrow(() -> new RuntimeException("Author not found"))
+        );
+
+        Book saved = bookRepo.save(book);
+
+        return new BookDto(
+                saved.getId(),
+                saved.getTitle(),
+                saved.getGenre(),
+                saved.getPublishYear(),
+                saved.getPages(),
+                saved.getIsbn(),
+                saved.getAuthor().getFirstName() + " " + saved.getAuthor().getLastName()
+        );
     }
+
     public List<BookDto> findAll(){
         return bookRepo.findAll().stream()
                 .map(b-> new BookDto(b.getId(), b.getTitle(),b.getGenre(), b.getPublishYear(), b.getPages(),b.getIsbn(),(b.getAuthor().getFirstName()+" "+b.getAuthor().getLastName())))
@@ -38,9 +53,10 @@ public class BookService {
                 .toList();
     }
 
-    public void update(BookUpdateDto dto, Long id){
+    public BookDto update(BookUpdateDto dto, Long id) {
         Book book = bookRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Book not found"));
+
         book.setTitle(dto.getTitle());
         book.setIsbn(dto.getIsbn());
         book.setGenre(dto.getGenre());
@@ -50,9 +66,24 @@ public class BookService {
                 authorRepo.findById(dto.getAuthorId())
                         .orElseThrow(() -> new RuntimeException("Author not found"))
         );
-        bookRepo.save(book);
+
+        Book saved = bookRepo.save(book);
+
+        return new BookDto(
+                saved.getId(),
+                saved.getTitle(),
+                saved.getGenre(),
+                saved.getPublishYear(),
+                saved.getPages(),
+                saved.getIsbn(),
+                saved.getAuthor().getFirstName() + " " + saved.getAuthor().getLastName()
+        );
     }
+
     public void deleteBookByID(Long id){
+        if (!bookRepo.existsById(id)) {
+            throw new RuntimeException("Book not found");
+        }
         bookRepo.deleteById(id);
     }
     public BookUpdateDto findByIdForEdit(Long id){

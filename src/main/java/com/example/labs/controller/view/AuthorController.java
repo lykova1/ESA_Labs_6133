@@ -1,4 +1,4 @@
-package com.example.labs.controller;
+package com.example.labs.controller.view;
 
 import com.example.labs.dto.AuthorFormDto;
 import com.example.labs.service.AuthorService;

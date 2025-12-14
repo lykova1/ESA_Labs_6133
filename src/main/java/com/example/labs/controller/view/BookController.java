@@ -1,4 +1,4 @@
-package com.example.labs.controller;
+package com.example.labs.controller.view;
 
 import com.example.labs.dto.BookCreateDto;
 import com.example.labs.dto.BookUpdateDto;
@@ -9,7 +9,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Scanner;
 
 @Controller
 @RequestMapping("/books")
@@ -37,6 +36,7 @@ public class BookController {
         bookService.create(dto);
         return ("redirect:/books");
     }
+
     @PostMapping("/{id}/edit")
     public String updateBook(@PathVariable Long id, BookUpdateDto dto){
         bookService.update(dto, id);
