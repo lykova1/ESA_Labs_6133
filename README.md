@@ -106,8 +106,8 @@ src="https://github.com/user-attachments/assets/5fd1c1ad-534b-4167-94c2-23c27441
 2. Использовать скрипт из schema.sql
 3. Запустить Spring Boot приложение
 4. Открыть в браузере:
-   - `http://localhost:8080/books`
-   - `http://localhost:8080/authors`
+   - `http://localhost:8090/books`
+   - `http://localhost:8090/authors`
 ---
 
 
