@@ -6,7 +6,7 @@
 
     <groupId>com.example</groupId>
     <artifactId>JakartaEE-plant_stocks</artifactId>
-    <version>1.4-SNAPSHOT</version>
+    <version>1.4.5-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <properties>

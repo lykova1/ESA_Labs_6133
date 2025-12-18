@@ -9,7 +9,7 @@ import java.util.List;
 @Stateless
 public class WarehouseService {
     @PersistenceContext(unitName = "plantPU")
-    private EntityManager em; // Убрал static
+    private EntityManager em;
 
     public List<Warehouse> findAll() {
         return em.createQuery("SELECT w FROM Warehouse w", Warehouse.class)
@@ -27,7 +27,7 @@ public class WarehouseService {
         }
     }
 
-    public Warehouse findById(Long id) { // Убрал static
+    public Warehouse findById(Long id) {
         return em.find(Warehouse.class, id);
     }
 

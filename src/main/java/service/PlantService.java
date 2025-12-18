@@ -12,7 +12,7 @@ public class PlantService {
     private EntityManager em;
 
     public List<Plant> findAll() {
-        return em.createQuery("SELECT p FROM Plant p", Plant.class)
+        return em.createQuery("SELECT p FROM Plant p LEFT JOIN FETCH p.warehouse", Plant.class)
                 .getResultList();
     }
 

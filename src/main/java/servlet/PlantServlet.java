@@ -18,15 +18,36 @@ public class PlantServlet extends HttpServlet {
     @EJB
     private PlantService plantService;
 
-    @EJB // Добавил инъекцию WarehouseService
+    @EJB
     private WarehouseService warehouseService;
 
+    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        req.setAttribute("plants", plantService.findAll());
-        req.getRequestDispatcher("/index.jsp").forward(req, resp);
+
+        String action = req.getParameter("action");
+
+        if ("edit".equals(action)) {
+            // Показываем форму редактирования
+            Long id = Long.parseLong(req.getParameter("id"));
+            Plant plant = plantService.findById(id);
+
+            if (plant != null) {
+                req.setAttribute("plant", plant);
+                req.setAttribute("warehouses", warehouseService.findAll());
+                req.getRequestDispatcher("/editPlant.jsp").forward(req, resp);
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/plants");
+            }
+        } else {
+            // Показываем список растений
+            req.setAttribute("plants", plantService.findAll());
+            req.setAttribute("warehouses", warehouseService.findAll());
+            req.getRequestDispatcher("/index.jsp").forward(req, resp);
+        }
     }
 
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
@@ -36,26 +57,28 @@ public class PlantServlet extends HttpServlet {
             // Обработка удаления
             Long id = Long.parseLong(req.getParameter("id"));
             plantService.delete(id);
-        } else {
-            // Обработка добавления
+        } else if ("update".equals(action)) {
+            // Обработка обновления
+            Long id = Long.parseLong(req.getParameter("id"));
             String name = req.getParameter("name");
             int quantity = Integer.parseInt(req.getParameter("quantity"));
             String warehouseIdStr = req.getParameter("warehouseId");
 
-            Plant plant = new Plant();
-            plant.setName(name);
-            plant.setQuantity(quantity);
+            Plant plant = plantService.findById(id);
+            if (plant != null) {
+                plant.setName(name);
+                plant.setQuantity(quantity);
 
-            if (warehouseIdStr != null && !warehouseIdStr.trim().isEmpty()) {
-                Long warehouseId = Long.parseLong(warehouseIdStr);
-
-                Warehouse warehouse = warehouseService.findById(warehouseId);
-                if (warehouse != null) {
+                if (warehouseIdStr != null && !warehouseIdStr.trim().isEmpty()) {
+                    Long warehouseId = Long.parseLong(warehouseIdStr);
+                    Warehouse warehouse = warehouseService.findById(warehouseId);
                     plant.setWarehouse(warehouse);
+                } else {
+                    plant.setWarehouse(null);
                 }
-            }
 
-            plantService.add(plant);
+                plantService.update(plant);
+            }
         }
 
         resp.sendRedirect(req.getContextPath() + "/plants");
