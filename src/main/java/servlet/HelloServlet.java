@@ -1,4 +1,4 @@
-package com.example.jakartaeeplant_stocks;
+package servlet;
 
 import java.io.*;
 
