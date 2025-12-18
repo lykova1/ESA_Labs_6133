@@ -4,12 +4,10 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import model.Plant;
-
 import java.util.List;
 
 @Stateless
 public class PlantService {
-
     @PersistenceContext(unitName = "plantPU")
     private EntityManager em;
 
@@ -27,5 +25,13 @@ public class PlantService {
         if (p != null) {
             em.remove(p);
         }
+    }
+
+    public Plant findById(Long id) {
+        return em.find(Plant.class, id);
+    }
+
+    public void update(Plant plant) {
+        em.merge(plant);
     }
 }
