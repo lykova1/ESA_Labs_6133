@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="JakartaEE-plant_stocks:Web exploded">
+    <output-path>$PROJECT_DIR$/out/artifacts/JakartaEE_plant_stocks_Web_exploded</output-path>
+    <root id="root">
+      <element id="javaee-facet-resources" facet="JakartaEE-plant_stocks/web/Web" />
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="JakartaEE-plant_stocks" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>
