@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Authors</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="#">Library</a>
+
+        <div class="navbar-nav">
+            <a class="nav-link"
+               th:href="@{/books}"
+               th:classappend="${activePage} == 'books' ? ' active' : ''">
+                Books
+            </a>
+            <a class="nav-link"
+               th:href="@{/authors}"
+               th:classappend="${activePage} == 'authors' ? ' active' : ''">
+                Authors
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h1 class="mb-4">Authors</h1>
+
+    <table class="table table-striped">
+        <thead class="thead-dark">
+        <tr>
+            <th>ID</th>
+            <th>First name</th>
+            <th>Last name</th>
+            <th>Birth year</th>
+            <th>Country</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="author : ${authors}">
+            <td th:text="${author.id}">1</td>
+            <td th:text="${author.firstName}">Leo</td>
+            <td th:text="${author.lastName}">Tolstoy</td>
+            <td th:text="${author.birthYear}">1828</td>
+            <td th:text="${author.country}">Russia</td>
+
+            <td class="d-flex gap-2">
+                <a th:href="@{/authors/{id}/edit(id=${author.id})}"
+                   class="btn btn-sm btn-light border border-dark mr-2">
+                    Edit
+                </a>
+
+                <form th:action="@{/authors/{id}/delete(id=${author.id})}"
+                      method="post"
+                      style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger">
+                        Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a th:href="@{/authors/add}" class="btn btn-dark">Add author</a>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
