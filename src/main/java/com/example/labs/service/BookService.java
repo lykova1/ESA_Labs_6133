@@ -3,21 +3,33 @@ package com.example.labs.service;
 import com.example.labs.dto.BookCreateDto;
 import com.example.labs.dto.BookDto;
 import com.example.labs.dto.BookUpdateDto;
+import com.example.labs.dto.ChangeEventDto;
 import com.example.labs.model.Book;
 import com.example.labs.repository.AuthorRepo;
 import com.example.labs.repository.BookRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class BookService {
-    @Autowired
-    AuthorRepo authorRepo;
-    @Autowired
-    BookRepo bookRepo;
-    public BookDto create(BookCreateDto dto) {
+
+    private final JmsTemplate jmsTemplate;
+    private final AuthorRepo authorRepo;
+    private final BookRepo bookRepo;
+    private final ObjectMapper objectMapper;
+
+    public BookService(JmsTemplate jmsTemplate, AuthorRepo authorRepo, BookRepo bookRepo, ObjectMapper objectMapper) {
+        this.jmsTemplate = jmsTemplate;
+        this.authorRepo = authorRepo;
+        this.bookRepo = bookRepo;
+        this.objectMapper = objectMapper;
+    }
+
+    public BookDto create(BookCreateDto dto) throws JsonProcessingException {
         Book book = new Book();
         book.setTitle(dto.getTitle());
         book.setIsbn(dto.getIsbn());
@@ -31,29 +43,12 @@ public class BookService {
 
         Book saved = bookRepo.save(book);
 
-        return new BookDto(
-                saved.getId(),
-                saved.getTitle(),
-                saved.getGenre(),
-                saved.getPublishYear(),
-                saved.getPages(),
-                saved.getIsbn(),
-                saved.getAuthor().getFirstName() + " " + saved.getAuthor().getLastName()
-        );
+        sendEvent("CREATE", saved.getId(), "Book created: " + saved.getTitle());
+
+        return mapToDto(saved);
     }
 
-    public List<BookDto> findAll(){
-        return bookRepo.findAll().stream()
-                .map(b-> new BookDto(b.getId(), b.getTitle(),b.getGenre(), b.getPublishYear(), b.getPages(),b.getIsbn(),(b.getAuthor().getFirstName()+" "+b.getAuthor().getLastName())))
-                .toList();
-    }
-    public List<BookDto> findByGenre(String genre){
-        return bookRepo.findByGenre(genre).stream()
-                .map(b-> new BookDto(b.getId(), b.getTitle(),b.getGenre(), b.getPublishYear(), b.getPages(),b.getIsbn(),(b.getAuthor().getFirstName()+" "+b.getAuthor().getLastName())))
-                .toList();
-    }
-
-    public BookDto update(BookUpdateDto dto, Long id) {
+    public BookDto update(BookUpdateDto dto, Long id) throws JsonProcessingException {
         Book book = bookRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Book not found"));
 
@@ -69,25 +64,50 @@ public class BookService {
 
         Book saved = bookRepo.save(book);
 
-        return new BookDto(
-                saved.getId(),
-                saved.getTitle(),
-                saved.getGenre(),
-                saved.getPublishYear(),
-                saved.getPages(),
-                saved.getIsbn(),
-                saved.getAuthor().getFirstName() + " " + saved.getAuthor().getLastName()
-        );
+        sendEvent("UPDATE", saved.getId(), "Book updated: " + saved.getTitle());
+
+        return mapToDto(saved);
     }
 
-    public void deleteBookByID(Long id){
+    public void deleteBookByID(Long id) throws JsonProcessingException {
         if (!bookRepo.existsById(id)) {
             throw new RuntimeException("Book not found");
         }
+
         bookRepo.deleteById(id);
+        sendEvent("DELETE", id, "Book deleted");
     }
-    public BookUpdateDto findByIdForEdit(Long id){
+
+    public List<BookDto> findAll() {
+        return bookRepo.findAll().stream().map(this::mapToDto).toList();
+    }
+
+    public BookUpdateDto findByIdForEdit(Long id) {
         Book book = bookRepo.findById(id).orElseThrow();
-        return new BookUpdateDto(book.getId(),book.getTitle(),book.getIsbn(),book.getPublishYear(),book.getPages(),book.getGenre(),book.getAuthor().getId());
+        return new BookUpdateDto(book.getId(), book.getTitle(), book.getIsbn(), book.getPublishYear(),
+                book.getPages(), book.getGenre(), book.getAuthor().getId());
+    }
+
+    private BookDto mapToDto(Book book) {
+        return new BookDto(
+                book.getId(),
+                book.getTitle(),
+                book.getGenre(),
+                book.getPublishYear(),
+                book.getPages(),
+                book.getIsbn(),
+                book.getAuthor().getFirstName() + " " + book.getAuthor().getLastName()
+        );
+    }
+
+    private void sendEvent(String operation, Long id, String details) throws JsonProcessingException {
+        ChangeEventDto event = new ChangeEventDto();
+        event.setOperation(operation);
+        event.setEntity("Book");
+        event.setEntityId(id);
+        event.setDetails(details);
+
+        String json = objectMapper.writeValueAsString(event);
+        jmsTemplate.convertAndSend("change.queue", json);
     }
 }

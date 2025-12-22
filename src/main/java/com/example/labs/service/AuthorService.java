@@ -1,57 +1,45 @@
 package com.example.labs.service;
 
 import com.example.labs.dto.AuthorFormDto;
+import com.example.labs.dto.ChangeEventDto;
 import com.example.labs.model.Author;
 import com.example.labs.repository.AuthorRepo;
-import com.example.labs.repository.BookRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 @Service
 public class AuthorService {
-    @Autowired
-    AuthorRepo authorRepo;
+
+    private final AuthorRepo authorRepo;
+    private final JmsTemplate jmsTemplate;
+    private final ObjectMapper objectMapper;
+
+    public AuthorService(AuthorRepo authorRepo, JmsTemplate jmsTemplate, ObjectMapper objectMapper) {
+        this.authorRepo = authorRepo;
+        this.jmsTemplate = jmsTemplate;
+        this.objectMapper = objectMapper;
+    }
 
     public List<AuthorFormDto> findAll() {
         return authorRepo.findAll().stream()
                 .map(a -> new AuthorFormDto(a.getId(), a.getFirstName(), a.getLastName(), a.getBirthYear(), a.getCountry()))
                 .toList();
     }
-    public AuthorFormDto create(AuthorFormDto dto){
-        Author author = new Author(
-                dto.getFirstName(),
-                dto.getLastName(),
-                dto.getBirthYear(),
-                dto.getCountry()
-        );
 
+    public AuthorFormDto create(AuthorFormDto dto) throws JsonProcessingException {
+        Author author = new Author(dto.getFirstName(), dto.getLastName(), dto.getBirthYear(), dto.getCountry());
         Author saved = authorRepo.save(author);
 
-        return new AuthorFormDto(
-                saved.getId(),
-                saved.getFirstName(),
-                saved.getLastName(),
-                saved.getBirthYear(),
-                saved.getCountry()
-        );
+        sendEvent("CREATE", saved.getId(), "Author created: " + saved.getFirstName() + " " + saved.getLastName());
+
+        return mapToDto(saved);
     }
 
-
-    public AuthorFormDto findByIdForEdit(Long id) {
-        Author author = authorRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Author not found"));
-
-        return new AuthorFormDto(
-                author.getId(),
-                author.getFirstName(),
-                author.getLastName(),
-                author.getBirthYear(),
-                author.getCountry()
-        );
-    }
-
-    public AuthorFormDto update(Long id, AuthorFormDto dto) {
+    public AuthorFormDto update(Long id, AuthorFormDto dto) throws JsonProcessingException {
         Author author = authorRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Author not found"));
 
@@ -62,19 +50,38 @@ public class AuthorService {
 
         Author saved = authorRepo.save(author);
 
-        return new AuthorFormDto(
-                saved.getId(),
-                saved.getFirstName(),
-                saved.getLastName(),
-                saved.getBirthYear(),
-                saved.getCountry()
-        );
+        sendEvent("UPDATE", saved.getId(), "Author updated: " + saved.getFirstName() + " " + saved.getLastName());
+
+        return mapToDto(saved);
     }
 
-    public void deleteById(Long id) {
+    public void deleteById(Long id) throws JsonProcessingException {
         if (!authorRepo.existsById(id)) {
-            throw new RuntimeException("Book not found");
+            throw new RuntimeException("Author not found");
         }
         authorRepo.deleteById(id);
+        sendEvent("DELETE", id, "Author deleted");
+    }
+
+    public AuthorFormDto findByIdForEdit(Long id) {
+        Author author = authorRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Author not found"));
+        return mapToDto(author);
+    }
+
+    private AuthorFormDto mapToDto(Author author) {
+        return new AuthorFormDto(author.getId(), author.getFirstName(), author.getLastName(),
+                author.getBirthYear(), author.getCountry());
+    }
+
+    private void sendEvent(String operation, Long id, String details) throws JsonProcessingException {
+        ChangeEventDto event = new ChangeEventDto();
+        event.setOperation(operation);
+        event.setEntity("Author");
+        event.setEntityId(id);
+        event.setDetails(details);
+
+        String json = objectMapper.writeValueAsString(event);
+        jmsTemplate.convertAndSend("change.queue", json);
     }
 }

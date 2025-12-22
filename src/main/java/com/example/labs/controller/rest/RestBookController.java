@@ -5,6 +5,7 @@ import com.example.labs.dto.BookDto;
 import com.example.labs.dto.BookUpdateDto;
 import com.example.labs.service.BookService;
 import com.example.labs.util.XmlViewRenderer;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +37,7 @@ public class RestBookController {
     }
 
     @PostMapping(consumes = {"application/json","application/xml"}, produces = "application/json")
-    public ResponseEntity<BookDto> createJson(@RequestBody BookCreateDto dto) {
+    public ResponseEntity<BookDto> createJson(@RequestBody BookCreateDto dto) throws JsonProcessingException {
         BookDto created = bookService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -51,7 +52,7 @@ public class RestBookController {
     }
 
     @PutMapping(value="/{id}", consumes = {"application/json","application/xml"}, produces = "application/json")
-    public ResponseEntity<BookDto> updateJson(@PathVariable Long id, @RequestBody BookUpdateDto dto) {
+    public ResponseEntity<BookDto> updateJson(@PathVariable Long id, @RequestBody BookUpdateDto dto) throws JsonProcessingException {
         BookDto updated = bookService.update(dto, id);
         return ResponseEntity.ok(updated);
     }
@@ -66,7 +67,7 @@ public class RestBookController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) throws JsonProcessingException {
         bookService.deleteBookByID(id);
         return ResponseEntity.noContent().build();
     }

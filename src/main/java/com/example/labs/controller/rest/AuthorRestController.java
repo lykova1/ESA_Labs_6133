@@ -3,6 +3,7 @@ package com.example.labs.controller.rest;
 import com.example.labs.dto.AuthorFormDto;
 import com.example.labs.service.AuthorService;
 import com.example.labs.util.XmlViewRenderer;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class AuthorRestController {
     }
 
     @PostMapping(consumes = {"application/json","application/xml"}, produces = "application/json")
-    public ResponseEntity<AuthorFormDto> addAuthorJson(@RequestBody AuthorFormDto dto) {
+    public ResponseEntity<AuthorFormDto> addAuthorJson(@RequestBody AuthorFormDto dto) throws JsonProcessingException {
         AuthorFormDto created = authorService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -50,7 +51,7 @@ public class AuthorRestController {
     }
 
     @PutMapping(value="/{id}", consumes = {"application/json","application/xml"}, produces = "application/json")
-    public ResponseEntity<AuthorFormDto> editAuthorJson(@PathVariable Long id, @RequestBody AuthorFormDto dto) {
+    public ResponseEntity<AuthorFormDto> editAuthorJson(@PathVariable Long id, @RequestBody AuthorFormDto dto) throws JsonProcessingException {
         AuthorFormDto updated = authorService.update(id, dto);
         return ResponseEntity.ok(updated);
     }
@@ -66,7 +67,7 @@ public class AuthorRestController {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAuthor(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteAuthor(@PathVariable Long id) throws JsonProcessingException {
         authorService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

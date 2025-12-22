@@ -47,3 +47,12 @@ VALUES
     ('Harry Potter and the Philosopher''s Stone', '9780747532699', 1997, 223, 'Fantasy', 2),
     ('Harry Potter and the Chamber of Secrets',   '9780747538493', 1998, 251, 'Fantasy', 2),
     ('War and Peace',  '9780199232765', 1869, 1225, 'Historical novel', 3);
+
+CREATE TABLE change_log (
+                            id          BIGSERIAL       PRIMARY KEY,
+                            event_time TIMESTAMP,
+                            operation_type VARCHAR(20),
+                            entity_name VARCHAR(50),
+                            entity_id BIGINT,
+                            details TEXT
+);

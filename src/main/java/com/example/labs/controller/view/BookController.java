@@ -4,6 +4,7 @@ import com.example.labs.dto.BookCreateDto;
 import com.example.labs.dto.BookUpdateDto;
 import com.example.labs.service.AuthorService;
 import com.example.labs.service.BookService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,13 +33,13 @@ public class BookController {
         return "book-add";
     }
     @PostMapping("/add")
-    public String addBook(@ModelAttribute("book") BookCreateDto dto){
+    public String addBook(@ModelAttribute("book") BookCreateDto dto) throws JsonProcessingException {
         bookService.create(dto);
         return ("redirect:/books");
     }
 
     @PostMapping("/{id}/edit")
-    public String updateBook(@PathVariable Long id, BookUpdateDto dto){
+    public String updateBook(@PathVariable Long id, BookUpdateDto dto) throws JsonProcessingException {
         bookService.update(dto, id);
         return ("redirect:/books");
     }
@@ -52,7 +53,7 @@ public class BookController {
     }
 
     @PostMapping("/{id}/delete")
-    public  String deleteBook(@PathVariable Long id){
+    public  String deleteBook(@PathVariable Long id) throws JsonProcessingException {
         bookService.deleteBookByID(id);
         return ("redirect:/books");
     }

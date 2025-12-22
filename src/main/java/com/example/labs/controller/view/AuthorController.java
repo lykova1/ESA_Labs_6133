@@ -2,6 +2,7 @@ package com.example.labs.controller.view;
 
 import com.example.labs.dto.AuthorFormDto;
 import com.example.labs.service.AuthorService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,7 +21,7 @@ public class AuthorController {
         return "authors";
     }
     @PostMapping("/add")
-    public String addAuthor(@ModelAttribute ("author") AuthorFormDto dto){
+    public String addAuthor(@ModelAttribute ("author") AuthorFormDto dto) throws JsonProcessingException {
         authorService.create(dto);
         return "redirect:/authors";
     }
@@ -39,13 +40,13 @@ public class AuthorController {
 
     @PostMapping("/{id}/edit")
     public String editAuthor(@PathVariable Long id,
-                             @ModelAttribute("author") AuthorFormDto dto) {
+                             @ModelAttribute("author") AuthorFormDto dto) throws JsonProcessingException {
         authorService.update(id, dto);
         return "redirect:/authors";
     }
 
     @PostMapping("/{id}/delete")
-    public String deleteAuthor(@PathVariable Long id) {
+    public String deleteAuthor(@PathVariable Long id) throws JsonProcessingException {
         authorService.deleteById(id);
         return "redirect:/authors";
     }
