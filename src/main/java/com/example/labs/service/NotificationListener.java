@@ -1,6 +1,7 @@
 package com.example.labs.service;
 
 import com.example.labs.dto.ChangeEventDto;
+import com.example.labs.util.JmsDestinations;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.mail.SimpleMailMessage;
@@ -18,7 +19,7 @@ public class NotificationListener {
         this.objectMapper = objectMapper;
     }
 
-    @JmsListener(destination = "change.queue")
+    @JmsListener(destination = JmsDestinations.CHANGE_TOPIC)
     public void notify(String messageJson) {
         try {
             ChangeEventDto event = objectMapper.readValue(messageJson, ChangeEventDto.class);

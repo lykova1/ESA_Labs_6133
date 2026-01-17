@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
+import com.example.labs.util.JmsDestinations;
 
 import java.time.LocalDateTime;
 
@@ -23,7 +24,7 @@ public class JournalListener {
         this.repo = repo;
     }
 
-    @JmsListener(destination = "change.queue")
+    @JmsListener(destination = JmsDestinations.CHANGE_TOPIC)
     public void receive(String messageJson) throws JsonProcessingException {
         ChangeEventDto event = objectMapper.readValue(messageJson, ChangeEventDto.class);
 

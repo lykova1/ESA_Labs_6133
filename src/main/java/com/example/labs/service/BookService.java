@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
+import com.example.labs.util.JmsDestinations;
 
 import java.util.List;
 
@@ -108,6 +109,6 @@ public class BookService {
         event.setDetails(details);
 
         String json = objectMapper.writeValueAsString(event);
-        jmsTemplate.convertAndSend("change.queue", json);
+        jmsTemplate.convertAndSend(JmsDestinations.CHANGE_TOPIC, json);
     }
 }
