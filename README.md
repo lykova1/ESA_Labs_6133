@@ -1,145 +1,202 @@
-## Сравнение JAX-RS и Spring REST
+# Практическая работа №4 — Java Message Service (JMS)
 
-### JAX-RS
-JAX-RS (Jakarta RESTful Web Services) — это стандарт для создания RESTful
-веб-сервисов на Java. Он определяет набор аннотаций и правил
-(`@Path`, `@GET`, `@POST`, `@Produces`, `@Consumes`), но не предоставляет
-готовую реализацию. Для работы требуется выбор и настройка
-конкретного провайдера (Jersey, RESTEasy, Apache CXF и др.).
 
-Преимущества:
-- является стандартом и не привязан к конкретному фреймворку;
-- переносим между различными реализациями;
-- хорошо подходит для Jakarta EE приложений.
+## Описание
+Веб-приложение **Library Management System**, разработанное с использованием
+фреймворка **Spring Boot** и технологий **Spring Data JPA** и **Java Message Service (JMS)**.  
+Приложение реализует механизм **журналирования изменений** и **систему уведомлений**
+об изменениях в данных с использованием асинхронного обмена сообщениями.
 
-Недостатки:
-- требует дополнительной настройки окружения;
-- работа с сериализацией JSON/XML зависит от выбранной реализации;
-- меньше встроенных средств для интеграции с другими слоями приложения.
+Приложение предоставляет операции добавления, редактирования, удаления и просмотра
+данных через веб-интерфейс, а также фиксирует все изменения в базе данных
+и отправляет уведомления о выбранных событиях.
+
+В качестве брокера сообщений используется **Apache ActiveMQ**.  
+IDE — **IntelliJ IDEA 2025**.
 
 ---
 
-### Spring REST
-Spring REST (на базе Spring MVC) — это подход к разработке REST API,
-использующий инфраструктуру Spring Framework. REST-контроллеры
-создаются с помощью аннотаций `@RestController`, `@RequestMapping`,
-`@GetMapping`, `@PostMapping` и др.
+## Предметная область
+**Библиотека**
 
-Преимущества:
-- удобная и лаконичная реализация REST API;
-- встроенная поддержка JSON и XML через механизм `HttpMessageConverter`;
-- простое управление форматами данных с помощью `produces` и `consumes`;
-- удобное формирование HTTP-ответов и кодов статуса.
+- **Author** — автор книги  
+- **Book** — книга  
+- **ChangeLog** — журнал изменений  
 
-Недостатки:
-- не является стандартом;
-- привязан к экосистеме Spring.
+Связи:
+- **один автор — много книг (One-To-Many)**  
+- **каждая книга принадлежит одному автору (Many-To-One)**  
+
+Сущность `ChangeLog` используется для хранения информации обо всех изменениях,
+происходящих с основными сущностями системы.
 
 ---
 
-### Выбор технологии
-Для данной лабораторной работы выбран **Spring REST**, так как он
-обеспечивает более простую реализацию REST API и удобную поддержку
-нескольких форматов представления данных (JSON и XML), что напрямую
-соответствует требованиям задания. Кроме того, Spring REST предоставляет
-понятные средства для обработки HTTP-статусов и интеграции с бизнес-логикой.
-## Используемая предметная область (Задание 2)
+## Архитектура
+Приложение реализовано по классической трёхслойной архитектуре:
 
-Использовано приложение **Library** из практической работы №2.
+- **Data layer**  
+  JPA-сущности (`Author`, `Book`, `ChangeLog`) и репозитории Spring Data JPA  
 
-Сущности:
-- **Author**
-- **Book**
+- **Business layer**  
+  Сервисы (`AuthorService`, `BookService`), содержащие бизнес-логику и отправку JMS-сообщений  
 
-Связь:
-- один автор может иметь несколько книг (One-To-Many);
-- книга связана с одним автором (Many-To-One).
+- **Presentation layer**  
+  MVC-контроллеры (`AuthorController`, `BookController`) и HTML-шаблоны  
+
+Асинхронная обработка событий реализована с использованием **JMS Queue** и
+обработчиков сообщений (`@JmsListener`).
 
 ---
 
-## REST API
+## Структура проекта
 
-Реализованы REST-контроллеры:
-- `/api/authors`
-- `/api/books`
+```text
+src
+└── main
+    ├── java
+    │   └── com.example.labs
+    │       ├── controller
+    │       │   └── view
+    │       │       ├── AuthorController.java
+    │       │       └── BookController.java
+    │       │
+    │       ├── dto
+    │       │   ├── AuthorFormDto.java
+    │       │   ├── BookCreateDto.java
+    │       │   ├── BookUpdateDto.java
+    │       │   └── ChangeEventDto.java
+    │       │
+    │       ├── model
+    │       │   ├── Author.java
+    │       │   ├── Book.java
+    │       │   └── ChangeLog.java
+    │       │
+    │       ├── repository
+    │       │   ├── AuthorRepo.java
+    │       │   ├── BookRepo.java
+    │       │   └── ChangeLogRepo.java
+    │       │
+    │       ├── service
+    │       │   ├── AuthorService.java
+    │       │   ├── BookService.java
+    │       │   ├── JournalListener.java
+    │       │   └── NotificationListener.java
+    │       │
+    │       └── Lab2Application.java
+    │
+    └── resources
+        ├── application.properties
+        └── templates
+```
 
-Поддерживаемые операции:
-- `GET` — получение списка объектов;
-- `POST` — добавление нового объекта;
-- `PUT` — редактирование объекта;
-- `DELETE` — удаление объекта.
-
-API поддерживает:
-- **JSON**
-- **XML**
-
-Поддержка форматов реализована через:
-- `produces = application/json | application/xml`
-- `consumes = application/json | application/xml`
-
----
-
-## XML + XSL-преобразование
-
-Для XML-ответов разработаны XSL-шаблоны:
-- `authors.xsl`
-- `books.xsl`
-
-XSL-файлы размещены в статической части веб-приложения (`/xsl`).
-
-При открытии XML-ответа в браузере данные автоматически
-отображаются в виде HTML-страницы с таблицами и навигацией.
-
----
-## Добавление XSL в XML-ответы
-Для выполнения требования о подключении XSL-преобразования
-в начало XML-ответов используется ручное формирование XML.
-
-Перед сериализованными данными в XML добавляется инструкция
-`xml-stylesheet`, указывающая путь к соответствующему XSL-файлу.
-
----
-
-## Демонстрация функционала:
-
-### Просмотр данных
-- Просмотр списка авторов
-- Просмотр списка книг
-<img width="1030" height="400" alt="image" src="https://github.com/user-attachments/assets/8559f4bf-1ee0-4ef9-a0ba-dcb795928473" />
-<img width="1849" height="754" alt="image" src="https://github.com/user-attachments/assets/7b7a8357-84f9-4a37-be27-eb66c70f6fa4" />
-
-
----
-
+## Функционал
+Повторяет функционал из практической работы №3.
 ### Управление авторами
-- Добавление автора
-- Редактирование автора
-- Удаление автора
-<img width="939" height="683" alt="image" src="https://github.com/user-attachments/assets/0b6f8b42-a534-4ed5-96bc-730c658cf87e" />
-<img width="897" height="657" alt="image" src="https://github.com/user-attachments/assets/861e34f2-0466-4629-88c0-61e73caf7399" />
-<img width="1727" height="686" alt="image" src="https://github.com/user-attachments/assets/daeacd2f-1c01-4268-9084-a23d71343deb" />
-<img width="879" height="642" alt="image" src="https://github.com/user-attachments/assets/88fbe926-7e2a-4559-85ce-de9a0353c1d3" />
-<img width="1732" height="562" alt="image" src="https://github.com/user-attachments/assets/d9a146e8-744a-4a91-9331-0a4426a4a510" />
-
-<img width="863" height="672" alt="image" src="https://github.com/user-attachments/assets/0d84216d-496f-4c44-a4b5-d9b0ce478cbf" />
-<img width="868" height="642" alt="image" src="https://github.com/user-attachments/assets/cbf6f264-25b4-45da-b6af-5c95b2424800" />
-<img width="1763" height="627" alt="image" src="https://github.com/user-attachments/assets/372ef4ed-9c49-4b30-9998-20165fbb57ec" />
+- Просмотр списка авторов  
+- Добавление нового автора  
+- Редактирование информации об авторе  
+- Удаление автора  
 
 ---
 
 ### Управление книгами
-- Добавление книги
-- Редактирование книги
-- Удаление книги
-<img width="863" height="696" alt="image" src="https://github.com/user-attachments/assets/d75ebd7f-7371-40de-a799-fe6db5b9b500" />
-<img width="866" height="694" alt="image" src="https://github.com/user-attachments/assets/63a76f23-9743-4d3f-9aac-ba1143f47004" />
-<img width="1750" height="670" alt="image" src="https://github.com/user-attachments/assets/55c104c6-1456-4ad8-9974-6e447defdf18" />
-<img width="918" height="698" alt="image" src="https://github.com/user-attachments/assets/d0f46100-bf01-4dd7-8193-c9df6d4a4bce" />
-<img width="870" height="698" alt="image" src="https://github.com/user-attachments/assets/5ddff4e8-b4af-4bc0-a977-33e3827f9295" />
-<img width="912" height="635" alt="image" src="https://github.com/user-attachments/assets/d12f86dd-3809-4c21-989d-f7768400a87e" />
-<img width="1791" height="573" alt="image" src="https://github.com/user-attachments/assets/7364a82a-6665-4b4f-a25d-8e5acffddd42" />
+- Просмотр списка книг  
+- Добавление книги с указанием автора  
+- Редактирование данных книги  
+- Удаление книги  
+- Фильтрация книг по жанру  
+
+---
+
+### Журналирование изменений
+Каждое изменение данных (добавление, обновление, удаление сущностей `Author` и `Book`)
+приводит к отправке JMS-сообщения в очередь.
+
+Полученные сообщения обрабатываются асинхронно и сохраняются в таблицу `change_log`,
+содержащую следующую информацию:
+- тип операции (`INSERT`, `UPDATE`, `DELETE`)
+- имя сущности
+- идентификатор сущности
+- описание изменения
+- дату и время события
+
+Логирование производится в таблицу. Ниже то, что творилось при разработке и проверке функционала (для проверки логирования, которое не работало, было создано несколько одинаковых книг Достоевского с разными isnb, которые уже при починке логирования были удалены, что можно увидеть ниже).
+
+<img width="2476" height="1006" alt="image" src="https://github.com/user-attachments/assets/ac384482-116c-43ab-b258-ff7e517b4145" />
+
+---
+
+### Система уведомлений
+Для выбранных типов событий (например, удаление книги) реализована система
+email-уведомлений.  
+При выполнении заданного условия обработчик JMS отправляет уведомление
+на указанный адрес электронной почты.
+
+Тестовая отправка производится с помощью MailHog.
+
+<img width="2858" height="621" alt="image" src="https://github.com/user-attachments/assets/890cef5f-aa8b-4a2c-909c-ba8c45206361" />
+<img width="2864" height="614" alt="image" src="https://github.com/user-attachments/assets/a4ac36d9-0697-4af5-bf46-8b686bb17a24" />
 
 
 ---
 
+## Структура базы данных
 
+### Таблица `author`
+- `id` — идентификатор автора (PRIMARY KEY)
+- `first_name` — имя
+- `last_name` — фамилия
+- `birth_year` — год рождения
+- `country` — страна
+
+---
+
+### Таблица `book`
+- `id` — идентификатор книги (PRIMARY KEY)
+- `title` — название
+- `isbn` — ISBN
+- `genre` — жанр
+- `publish_year` — год публикации
+- `pages` — количество страниц
+- `author_id` — внешний ключ на таблицу `author`
+
+---
+
+### Таблица `change_log`
+- `id` — идентификатор записи (PRIMARY KEY)
+- `event_time` — дата и время события
+- `operation_type` — тип операции
+- `entity_name` — имя сущности
+- `entity_id` — идентификатор сущности
+- `details` — описание изменений
+
+---
+
+## Используемые технологии
+- Java  
+- Spring Boot  
+- Spring MVC  
+- Spring Data JPA  
+- Java Message Service (JMS)  
+- Apache ActiveMQ  
+- Hibernate  
+- Maven  
+- HTML / CSS  
+
+---
+
+## Запуск приложения
+
+1. Установить и запустить СУБД (PostgreSQL или H2)
+2. Создать базу данных
+3. Настроить параметры подключения в `application.properties`
+4. Установить и запустить **Apache ActiveMQ**
+   - Брокер: `tcp://localhost:61616`
+   - Web Console: `http://localhost:8161`
+5. Собрать проект с помощью Maven
+6. Запустить приложение
+7. Открыть веб-интерфейс в браузере
+8. Выполнить операции добавления, редактирования и удаления данных
+9. Убедиться, что изменения фиксируются в таблице `change_log`
+   и обрабатываются асинхронно через JMS
